@@ -22,8 +22,8 @@ O projeto ainda está em desenvolvimento e as próximas atualizações serão vo
 
 Antes de começar, verifique se você atendeu aos seguintes requisitos:
 
-- Você instalou a versão mais recente de Paper, e Java 
-- Você tem uma máquina `<Windows / Linux / Mac>`
+- Você instalou a versão mais recente de PaperSpigot, e Java 
+- Você tem uma host com Pytero ou qualquer do tipo que esteja rodando seu servidor de minecraft.
 
 ## 🚀 Instalando Cash
 
@@ -39,14 +39,12 @@ Para usar Cash, siga estas etapas:
 Use /cash add ou cash enviar, cash remover, etc.
 ```
 
-Adicione comandos de execução e exemplos que você acha que os usuários acharão úteis. Fornece uma referência de opções para pontos de bônus!
-
 ## 📫 Contribuindo para Cash
 
 Para contribuir com Cash, siga estas etapas:
 
 1. Bifurque este repositório.
-2. Crie um branch: `git checkout -b <nome_branch>`.
+2. Crie um branch: `git checkout -b master`.
 3. Faça suas alterações e confirme-as: `git commit -m '<mensagem_commit>'`
 4. Envie para o branch original: `git push origin Cash / <local>`
 5. Crie a solicitação de pull.
@@ -60,12 +58,6 @@ Agradecemos às seguintes pessoas que contribuíram para este projeto:
 <table>
   <tr>
     <td align="center">
-      <a href="#" title="defina o titulo do link">
-        <img src="https://avatars3.githubusercontent.com/u/31936044" width="100px;" alt="Foto do Iuri Silva no GitHub"/><br>
-        <sub>
-          <b>Iuri Silva</b>
-        </sub>
-      </a>
     </td>
     <td align="center">
       <a href="#" title="defina o titulo do link">
