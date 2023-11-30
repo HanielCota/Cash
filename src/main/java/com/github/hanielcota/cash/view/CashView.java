@@ -66,10 +66,14 @@ public class CashView {
 
     private void collectGift(Player player, CashMenu playerCashMenu) {
         player.sendMessage(
-                "", "§aVocê coletou o presente com sucesso.", "§aEm 30 minutos, você poderá coletar novamente.", "");
+                "",
+                "§aVocê coletou o presente com sucesso.",
+                "§aEm 30 minutos, você poderá coletar novamente.",
+                "");
         player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 10f, 10f);
         playerCashMenu.setItem(24, menuItemFactory.createGrayGiftItem());
         giftCooldownCache.updateLastCollectedTime(player.getName());
+        economyService.deposit(player, 30);
     }
 
     private void redirectURL(Player player) {
