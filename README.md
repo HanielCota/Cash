@@ -1,9 +1,5 @@
 # Cash
 
-[![HanielCota - Cash](https://img.shields.io/static/v1?label=HanielCota&message=Cash&color=blue&logo=github)](https://github.com/HanielCota/Cash "Go to GitHub repo")
-[![stars - Cash](https://img.shields.io/github/stars/HanielCota/Cash?style=social)](https://github.com/HanielCota/Cash)
-[![forks - Cash](https://img.shields.io/github/forks/HanielCota/Cash?style=social)](https://github.com/HanielCota/Cash)
-
 <img src="imagem.jpg" alt="Exemplo imagem">
 
 > O plugin "Cash" é uma solução otimizada e cacheada para gerenciar economia em servidores Bukkit, incorporando uma arquitetura limpa para proporcionar desempenho eficiente e funcionalidades robustas.
