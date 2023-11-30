@@ -1,0 +1,4 @@
+name: Cash
+version: '${version}'
+main: com.github.hanielcota.cash.CashPlugin
+api-version: '1.20'
