@@ -46,20 +46,22 @@ public final class FastInvManager {
         }
 
         @EventHandler
-        public void onInventoryClick(InventoryClickEvent e) {
-            if (e.getClickedInventory() == null || !(e.getClickedInventory().getHolder() instanceof FastInv inv)) {
+        public void onInventoryClick(InventoryClickEvent event) {
+            if (event.getClickedInventory() == null || !(event.getClickedInventory().getHolder() instanceof FastInv inventory)) {
                 return;
             }
 
-            boolean wasCancelled = e.isCancelled();
-            e.setCancelled(true);
+            boolean wasCancelled = event.isCancelled();
+            event.setCancelled(true);
 
-            inv.handleClick(e);
+            inventory.handleClick(event);
 
-            if (!wasCancelled && !e.isCancelled()) {
-                e.setCancelled(false);
+            if (!wasCancelled && !event.isCancelled()) {
+                event.setCancelled(false);
             }
         }
+
+
 
         @EventHandler
         public void onInventoryOpen(InventoryOpenEvent e) {

@@ -1,10 +1,7 @@
 package com.github.hanielcota.cash.commands;
 
 import co.aikar.commands.BaseCommand;
-import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.CommandCompletion;
-import co.aikar.commands.annotation.Default;
-import co.aikar.commands.annotation.Subcommand;
+import co.aikar.commands.annotation.*;
 import com.github.hanielcota.cash.domain.EconomyService;
 import com.github.hanielcota.cash.infra.MySQLEconomyRepository;
 import com.github.hanielcota.cash.view.CashView;
@@ -33,6 +30,7 @@ public class CashCommand extends BaseCommand {
     }
 
     @Subcommand("set")
+    @CommandPermission("cash.admin")
     @CommandCompletion("@players")
     private void onSetCashCommand(Player sender, String[] args) {
         if (args.length < 2) {
@@ -85,6 +83,7 @@ public class CashCommand extends BaseCommand {
     }
 
     @Subcommand("remove")
+    @CommandPermission("cash.admin")
     @CommandCompletion("@players")
     private void onRemoveCashCommand(Player sender, String[] args) {
         if (args.length < 2) {
@@ -119,6 +118,7 @@ public class CashCommand extends BaseCommand {
     }
 
     @Subcommand("add")
+    @CommandPermission("cash.admin")
     @CommandCompletion("@players")
     private void onAddCashCommand(Player sender, String[] args) {
         if (args.length < 2) {
