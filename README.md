@@ -44,9 +44,9 @@ Windows:
 <comando_de_instalação>
 ```
 
-## ☕ Usando <nome_do_projeto>
+## ☕ Usando Cash
 
-Para usar <nome_do_projeto>, siga estas etapas:
+Para usar Cash, siga estas etapas:
 
 ```
 <exemplo_de_uso>
