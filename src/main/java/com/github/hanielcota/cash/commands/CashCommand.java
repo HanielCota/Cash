@@ -8,7 +8,7 @@ import co.aikar.commands.annotation.Subcommand;
 import com.github.hanielcota.cash.domain.EconomyService;
 import com.github.hanielcota.cash.infra.MySQLEconomyRepository;
 import com.github.hanielcota.cash.view.CashView;
-import com.github.hanielcota.cash.view.MenuItemFactory;
+import com.github.hanielcota.cash.view.items.MenuItemFactory;
 import com.github.hanielcota.cash.view.menu.CashMenu;
 import lombok.AllArgsConstructor;
 import org.bukkit.Bukkit;
@@ -151,6 +151,7 @@ public class CashCommand extends BaseCommand {
         economyService.deposit(targetPlayer, amount);
         sender.sendMessage("§aAdicionada a quantia de " + amount + " cash para " + targetPlayer.getName());
     }
+
 
     @Subcommand("enviar")
     @CommandCompletion("@players")

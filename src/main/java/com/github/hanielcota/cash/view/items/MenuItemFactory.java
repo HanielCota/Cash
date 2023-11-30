@@ -1,4 +1,4 @@
-package com.github.hanielcota.cash.view;
+package com.github.hanielcota.cash.view.items;
 
 import com.github.hanielcota.cash.domain.EconomyService;
 import com.github.hanielcota.cash.domain.PlayerAccount;
@@ -16,7 +16,6 @@ public class MenuItemFactory {
         return new ItemBuilder(SkullUrl.getSKULL_URL())
                 .setName("§aPresente de Cash")
                 .setLore(
-                        "",
                         "§7Ao ficar online no servidor,",
                         "§7por 30 minutos, você recebe",
                         "§7um presente misterioso que pode ser coletado.",
@@ -40,6 +39,21 @@ public class MenuItemFactory {
                 .build();
     }
 
+    public ItemStack createTopItem() {
+        return new ItemBuilder(Material.RAW_GOLD)
+                .setName("§aTop Cash")
+                .setLore("§7Confira os players com mais cash do servidor.")
+                .build();
+    }
+
+    public ItemStack createBackItem() {
+        return new ItemBuilder(Material.ARROW)
+                .setName("§cVoltar")
+                .setLore("§7Clique para retornar ao menu anterior.")
+                .build();
+    }
+
+
     public ItemStack createTopPlayerItem(PlayerAccount playerAccount, Player player, int position) {
         if (playerAccount == null || playerAccount.getPlayerId() == null) {
             return new ItemStack(Material.AIR);
@@ -53,6 +67,18 @@ public class MenuItemFactory {
                         "§7Colocação: #" + position,
                         "§7Saldo: §e" + NumberFormatter.formatAbbreviatedThreadSafe(balance))
                 .setSkullOwner(player.getName())
+                .build();
+    }
+
+    public ItemStack createRedirectURLItem() {
+        return new ItemBuilder(Material.EMERALD)
+                .setName("§aComprar Cash")
+                .setLore(
+                        "§7Clique aqui para ir à nossa loja.",
+                        "",
+                        "§7Onde você consegue comprar",
+                        "§7Cash para desfrutar de toda",
+                        "§7as vantagens proporcionadas por ele.")
                 .build();
     }
 

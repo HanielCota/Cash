@@ -7,7 +7,7 @@ import com.github.hanielcota.cash.infra.MySQLEconomyRepository;
 import com.github.hanielcota.cash.listeners.PlayerJoinEventListener;
 import com.github.hanielcota.cash.usecase.EconomyServiceImpl;
 import com.github.hanielcota.cash.utils.external.FastInvManager;
-import com.github.hanielcota.cash.view.MenuItemFactory;
+import com.github.hanielcota.cash.view.items.MenuItemFactory;
 import com.github.hanielcota.cash.view.menu.CashMenu;
 import lombok.Getter;
 import org.bukkit.configuration.file.FileConfiguration;

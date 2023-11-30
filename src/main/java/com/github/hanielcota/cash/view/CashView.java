@@ -1,16 +1,17 @@
 package com.github.hanielcota.cash.view;
 
 import com.github.hanielcota.cash.domain.EconomyService;
-import com.github.hanielcota.cash.domain.PlayerAccount;
 import com.github.hanielcota.cash.infra.MySQLEconomyRepository;
+import com.github.hanielcota.cash.utils.ClickMessage;
+import com.github.hanielcota.cash.view.cache.GiftCooldownCache;
+import com.github.hanielcota.cash.view.items.MenuItemFactory;
 import com.github.hanielcota.cash.view.menu.CashMenu;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.md_5.bungee.api.chat.ClickEvent;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -22,7 +23,6 @@ public class CashView {
     private final MenuItemFactory menuItemFactory;
     private final MySQLEconomyRepository economyRepository;
     private final GiftCooldownCache giftCooldownCache = GiftCooldownCache.getInstance();
-    private final Cache<List<PlayerAccount>> topPlayersCache = new Cache<>(TimeUnit.MINUTES.toMillis(30));
 
     public CashMenu createCashView(Player player) {
         CashMenu playerCashMenu = new CashMenu();
@@ -31,16 +31,23 @@ public class CashView {
     }
 
     private void addCommonItems(CashMenu playerCashMenu, Player player) {
-        playerCashMenu.setItem(3, menuItemFactory.createInformationItem());
+        playerCashMenu.setItem(22, menuItemFactory.createInformationItem());
         playerCashMenu.setItem(4, menuItemFactory.createSkullItem(player, economyService));
 
+        playerCashMenu.setItem(21, menuItemFactory.createRedirectURLItem(), click -> redirectURL(player));
+
+        playerCashMenu.setItem(19, menuItemFactory.createTopItem(), click -> {
+            new CashTopView(economyService, menuItemFactory, economyRepository)
+                    .createTopCashMenu(player)
+                    .open(player);
+        });
+
         if (!canCollectGift(player)) {
-            playerCashMenu.setItem(5, menuItemFactory.createGrayGiftItem());
+            playerCashMenu.setItem(24, menuItemFactory.createGrayGiftItem());
             return;
         }
 
-        playerCashMenu.setItem(5, menuItemFactory.createGiftItem(), click -> collectGift(player, playerCashMenu));
-        updateTopPlayers(playerCashMenu, player);
+        playerCashMenu.setItem(24, menuItemFactory.createGiftItem(), click -> collectGift(player, playerCashMenu));
     }
 
     private boolean canCollectGift(Player player) {
@@ -60,50 +67,22 @@ public class CashView {
     private void collectGift(Player player, CashMenu playerCashMenu) {
         player.sendMessage(
                 "", "§aVocê coletou o presente com sucesso.", "§aEm 30 minutos, você poderá coletar novamente.", "");
-        player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1.0f, 1.0f);
-        playerCashMenu.setItem(5, menuItemFactory.createGrayGiftItem());
+        player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 10f, 10f);
+        playerCashMenu.setItem(24, menuItemFactory.createGrayGiftItem());
         giftCooldownCache.updateLastCollectedTime(player.getName());
     }
 
-    private void updateTopPlayers(CashMenu playerCashMenu, Player player) {
-        List<PlayerAccount> topPlayers = topPlayersCache.get(() -> economyRepository.getTopPlayers(5));
-        int startSlot = 20;
+    private void redirectURL(Player player) {
+        player.sendMessage("");
 
-        ItemStack barrierItem = menuItemFactory.createBarrierItem();
+        new ClickMessage("§aClique ")
+                .then("§a§lAQUI")
+                .click(ClickEvent.Action.OPEN_URL, "http://localhost")
+                .then("§a para comprar cash.")
+                .send(player);
 
-        for (int i = 0; i < 5; i++) {
-            playerCashMenu.setItem(startSlot + i, barrierItem);
-        }
-
-        for (int i = 0; i < Math.min(topPlayers.size(), 5); i++) {
-            PlayerAccount playerAccount = topPlayers.get(i);
-            ItemStack topPlayerItem = menuItemFactory.createTopPlayerItem(playerAccount, player, i + 1);
-
-            if (playerAccount != null) {
-                playerCashMenu.setItem(startSlot + i, topPlayerItem);
-            }
-        }
+        player.sendMessage("");
+        player.playSound(player.getLocation(), Sound.BLOCK_LEVER_CLICK, 10f, 10f);
     }
 
-    private static class Cache<V> {
-        private final long expirationMillis;
-        private long lastUpdateTime;
-        private V cachedValue;
-
-        public Cache(long expirationMillis) {
-            this.expirationMillis = expirationMillis;
-        }
-
-        public V get(CacheLoader<V> loader) {
-            if (System.currentTimeMillis() - lastUpdateTime > expirationMillis) {
-                cachedValue = loader.load();
-                lastUpdateTime = System.currentTimeMillis();
-            }
-            return cachedValue;
-        }
-    }
-
-    private interface CacheLoader<V> {
-        V load();
-    }
 }

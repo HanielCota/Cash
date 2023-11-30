@@ -284,7 +284,6 @@ public class ItemBuilder {
             setProfileMethod.setAccessible(true);
             setProfileMethod.invoke(skullMeta, profile);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            // Log the exception instead of printing the stack trace
             e.printStackTrace();
         }
 
