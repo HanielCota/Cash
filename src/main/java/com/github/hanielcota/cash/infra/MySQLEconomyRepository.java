@@ -47,7 +47,7 @@ public class MySQLEconomyRepository implements EconomyRepository {
         }
 
         try (Connection connection = dataSource.getConnection()) {
-            String query = "SELECT * FROM player_accounts WHERE player_id = ?";
+            String query = "SELECT * FROM cash WHERE player_id = ?";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, playerId);
 
@@ -69,7 +69,7 @@ public class MySQLEconomyRepository implements EconomyRepository {
     @Override
     public void savePlayerAccount(PlayerAccount playerAccount) {
         try (Connection connection = dataSource.getConnection()) {
-            String query = "REPLACE INTO player_accounts (player_id, balance) VALUES (?, ?)";
+            String query = "REPLACE INTO cash (player_id, balance) VALUES (?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, playerAccount.getPlayerId());
                 statement.setDouble(2, playerAccount.getBalance());
@@ -88,14 +88,15 @@ public class MySQLEconomyRepository implements EconomyRepository {
             throw new IllegalArgumentException("O limite deve ser um valor não negativo");
         }
 
-        List<PlayerAccount> topPlayers = new ArrayList<>(Optional.ofNullable(cache).map(c -> c.asMap().values()).orElse(Collections.emptyList()));
+        List<PlayerAccount> topPlayers = new ArrayList<>(
+                Optional.ofNullable(cache).map(c -> c.asMap().values()).orElse(Collections.emptyList()));
 
         if (!topPlayers.isEmpty()) {
             return adjustListSize(topPlayers, limit);
         }
 
         try (Connection connection = dataSource.getConnection()) {
-            String query = "SELECT * FROM player_accounts ORDER BY balance DESC LIMIT ?";
+            String query = "SELECT * FROM cash ORDER BY balance DESC LIMIT ?";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setInt(1, limit);
 
@@ -109,7 +110,9 @@ public class MySQLEconomyRepository implements EconomyRepository {
                 }
             }
 
-            Optional.ofNullable(cache).ifPresent(c -> topPlayers.forEach(playerAccount -> c.put(playerAccount.getPlayerId(), playerAccount)));
+            Optional.ofNullable(cache)
+                    .ifPresent(c ->
+                            topPlayers.forEach(playerAccount -> c.put(playerAccount.getPlayerId(), playerAccount)));
         } catch (SQLException e) {
             LOGGER.error("Error getting top players from the database", e);
             return Collections.emptyList();
@@ -141,7 +144,7 @@ public class MySQLEconomyRepository implements EconomyRepository {
 
     private void initializeDatabase() {
         try (Connection connection = dataSource.getConnection()) {
-            String query = "CREATE TABLE IF NOT EXISTS player_accounts ("
+            String query = "CREATE TABLE IF NOT EXISTS cash ("
                     + "player_id VARCHAR(36) PRIMARY KEY,"
                     + "balance DOUBLE NOT NULL"
                     + ")";
