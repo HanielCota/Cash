@@ -1,10 +1,8 @@
 # Cash
 
-![GitHub repo size](https://img.shields.io/github/repo-size/hanielcota/README-template?style=for-the-badge)
-![GitHub language count](https://img.shields.io/github/languages/count/hanielcota/README-template?style=for-the-badge)
-![GitHub forks](https://img.shields.io/github/forks/hanielcota/README-template?style=for-the-badge)
-![Bitbucket open issues](https://img.shields.io/bitbucket/issues/hanielcota/README-template?style=for-the-badge)
-![Bitbucket open pull requests](https://img.shields.io/bitbucket/pr-raw/hanielcota/README-template?style=for-the-badge)
+[![HanielCota - Cash](https://img.shields.io/static/v1?label=HanielCota&message=Cash&color=blue&logo=github)](https://github.com/HanielCota/Cash "Go to GitHub repo")
+[![stars - Cash](https://img.shields.io/github/stars/HanielCota/Cash?style=social)](https://github.com/HanielCota/Cash)
+[![forks - Cash](https://img.shields.io/github/forks/HanielCota/Cash?style=social)](https://github.com/HanielCota/Cash)
 
 <img src="imagem.jpg" alt="Exemplo imagem">
 
