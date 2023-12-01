@@ -27,10 +27,16 @@ public class MenuItemFactory {
 
     public ItemStack createGrayGiftItem() {
         return new ItemBuilder(SkullUrl.getSKULL_GIFT_OPEN_GRAY())
-                .setName("§cOps!")
-                .setLore("§7Você já coletou o presente hoje.")
+                .setName("§cPresente Expirado")
+                .setLore(
+                        "§7Você já coletou este presente.",
+                        "§7Aguarde alguns minutos para coletar novamente.",
+                        "§7Surpresas esperam por você!",
+                        "§7Torne seu dia mais especial."
+                )
                 .build();
     }
+
 
     public ItemStack createBarrierItem() {
         return new ItemBuilder(Material.BARRIER)
@@ -41,8 +47,13 @@ public class MenuItemFactory {
 
     public ItemStack createTopItem() {
         return new ItemBuilder(Material.RAW_GOLD)
-                .setName("§aTop Cash")
-                .setLore("§7Confira os players com mais cash do servidor.")
+                .setName("§aRanking de Cash")
+                .setLore(
+                        "§7Veja os jogadores mais ricos do servidor.",
+                        "§7Descubra quem lidera a economia!",
+                        "§7O ranking é atualizado regularmente.",
+                        "§7Acumule riquezas para subir nas posições."
+                )
                 .build();
     }
 
@@ -53,8 +64,7 @@ public class MenuItemFactory {
                 .build();
     }
 
-
-    public ItemStack createTopPlayerItem(PlayerAccount playerAccount, Player player, int position) {
+    public ItemStack createTopPlayerItem(PlayerAccount playerAccount, String playerName, int position) {
         if (playerAccount == null || playerAccount.getPlayerId() == null) {
             return new ItemStack(Material.AIR);
         }
@@ -62,11 +72,11 @@ public class MenuItemFactory {
         double balance = playerAccount.getBalance();
 
         return new ItemBuilder(Material.PLAYER_HEAD)
-                .setName("§a" + player.getName())
+                .setName("§a" + playerName)
                 .setLore(
                         "§7Colocação: #" + position,
                         "§7Saldo: §e" + NumberFormatter.formatAbbreviatedThreadSafe(balance))
-                .setSkullOwner(player.getName())
+                .setSkullOwner(playerName)
                 .build();
     }
 

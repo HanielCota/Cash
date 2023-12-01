@@ -41,18 +41,16 @@ public class CashTopView {
 
         for (int i = 0; i < Math.min(topPlayers.size(), 5); i++) {
             PlayerAccount playerAccount = topPlayers.get(i);
-            ItemStack topPlayerItem = menuItemFactory.createTopPlayerItem(playerAccount, player, i + 1);
-
-            if (playerAccount != null) {
-                topPlayersMenu.setItem(startSlot + i, topPlayerItem);
-            }
-            topPlayersMenu.setItem(27, menuItemFactory.createBackItem(), click -> {
-                new CashView(economyService, menuItemFactory, economyRepository)
-                        .createCashView(player)
-                        .open(player);
-            });
+            ItemStack topPlayerItem = menuItemFactory.createTopPlayerItem(playerAccount, playerAccount.getPlayerId(), i + 1);
+            topPlayersMenu.setItem(startSlot + i, topPlayerItem);
         }
+        topPlayersMenu.setItem(27, menuItemFactory.createBackItem(), click -> {
+            new CashView(economyService, menuItemFactory, economyRepository)
+                    .createCashView(player)
+                    .open(player);
+        });
     }
+
 
     private static class Cache<V> {
         private final long expirationMillis;

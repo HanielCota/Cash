@@ -17,7 +17,7 @@ public class InMemoryEconomyRepository implements EconomyRepository {
 
     @Override
     public PlayerAccount findPlayerAccount(Player player) {
-        String playerId = player.getUniqueId().toString();
+        String playerId = player.getName();
         PlayerAccount cachedAccount = cache.getIfPresent(playerId);
 
         return cachedAccount != null ? cachedAccount : getDefaultPlayerAccount(playerId);

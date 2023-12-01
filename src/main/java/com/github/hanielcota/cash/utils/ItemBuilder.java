@@ -1,7 +1,7 @@
 package com.github.hanielcota.cash.utils;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import org.bukkit.Bukkit;
@@ -21,11 +21,13 @@ import org.bukkit.potion.PotionEffectType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ItemBuilder {
 
     private final ItemStack itemStack;
-    private final Map<String, ItemMeta> cachedSkulls = Maps.newHashMap();
+    private final Map<String, ItemMeta> cachedSkulls = new HashMap<>();
+    private final Map<String, GameProfile> cachedProfiles = new HashMap<>();
 
     public ItemBuilder(Material material) {
         this(material, 1);
@@ -46,6 +48,7 @@ public class ItemBuilder {
             setSkull(materialName);
             return;
         }
+
         itemStack = new ItemStack(Objects.requireNonNullElse(material, Material.AIR), 1);
     }
 
@@ -77,26 +80,36 @@ public class ItemBuilder {
 
     public ItemBuilder setPotion(PotionEffectType type, int duration, int amplifier) {
         ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta instanceof PotionMeta potionMeta) {
-            potionMeta.addCustomEffect(new PotionEffect(type, duration, amplifier), true);
-            itemStack.setItemMeta(potionMeta);
+        if (!(itemMeta instanceof PotionMeta potionMeta)) {
+            return this;
         }
+
+        potionMeta.addCustomEffect(new PotionEffect(type, duration, amplifier), true);
+        itemStack.setItemMeta(potionMeta);
         return this;
     }
 
     public ItemBuilder setName(String name) {
         ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.setDisplayName(name);
-        itemStack.setItemMeta(itemMeta);
+        if (itemMeta != null) {
+            itemMeta.setDisplayName(name);
+            itemStack.setItemMeta(itemMeta);
+        }
         return this;
     }
 
     public ItemBuilder modifyName(String text, String replace) {
         ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta == null) {
+            return this;
+        }
+
         String displayName = itemMeta.getDisplayName();
         displayName = displayName.replace(text, replace);
+
         itemMeta.setDisplayName(displayName);
         itemStack.setItemMeta(itemMeta);
+
         return this;
     }
 
@@ -112,18 +125,23 @@ public class ItemBuilder {
 
     public ItemBuilder setSkullOwner(String owner) {
         ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta instanceof SkullMeta skullMeta) {
-            skullMeta.setOwner(owner);
-            itemStack.setItemMeta(skullMeta);
-            itemStack.setDurability((short) 3);
+        if (!(itemMeta instanceof SkullMeta skullMeta)) {
+            return this;
         }
+
+        skullMeta.setOwner(owner);
+        itemStack.setItemMeta(skullMeta);
+        itemStack.setDurability((short) 3);
+
         return this;
     }
 
     public ItemBuilder addEnchant(Enchantment enchantment, int level) {
         ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.addEnchant(enchantment, level, true);
-        itemStack.setItemMeta(itemMeta);
+        if (itemMeta != null) {
+            itemMeta.addEnchant(enchantment, level, true);
+            itemStack.setItemMeta(itemMeta);
+        }
         return this;
     }
 
@@ -144,23 +162,30 @@ public class ItemBuilder {
 
     public ItemBuilder addItemFlag(ItemFlag flag) {
         ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.addItemFlags(flag);
-        itemStack.setItemMeta(itemMeta);
+        if (itemMeta != null) {
+            itemMeta.addItemFlags(flag);
+            itemStack.setItemMeta(itemMeta);
+        }
         return this;
     }
 
     public ItemBuilder setLore(String... lore) {
         ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.setLore(Arrays.asList(lore));
-        itemStack.setItemMeta(itemMeta);
+        if (itemMeta != null) {
+            itemMeta.setLore(ImmutableList.copyOf(lore));
+            itemStack.setItemMeta(itemMeta);
+        }
         return this;
     }
 
     public ItemBuilder replaceLore(String key, String value) {
         ItemMeta itemMeta = itemStack.getItemMeta();
-        List<String> lore = itemMeta.getLore();
+        List<String> lore = itemMeta != null ? itemMeta.getLore() : null;
         if (lore != null) {
-            lore = lore.stream().map(line -> line.replace(key, value)).toList();
+            lore = lore.stream()
+                    .map(line -> line != null ? line.replace(key, value) : line)
+                    .collect(Collectors.collectingAndThen(Collectors.toList(), ImmutableList::copyOf));
+
             itemMeta.setLore(lore);
             itemStack.setItemMeta(itemMeta);
         }
@@ -169,33 +194,40 @@ public class ItemBuilder {
 
     public ItemBuilder setLore(List<String> lore) {
         ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.setLore(lore);
-        itemStack.setItemMeta(itemMeta);
+        if (itemMeta != null) {
+            itemMeta.setLore(ImmutableList.copyOf(lore));
+            itemStack.setItemMeta(itemMeta);
+        }
         return this;
     }
 
     public ItemBuilder setLoreIf(boolean condition, String... lore) {
         if (!condition) return this;
         ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.setLore(Arrays.asList(lore));
-        itemStack.setItemMeta(itemMeta);
+        if (itemMeta != null) {
+            itemMeta.setLore(ImmutableList.copyOf(lore));
+            itemStack.setItemMeta(itemMeta);
+        }
         return this;
     }
 
     public ItemBuilder setLoreIf(boolean condition, List<String> lore) {
         if (!condition) return this;
         ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.setLore(lore);
-        itemStack.setItemMeta(itemMeta);
+        if (itemMeta != null) {
+            itemMeta.setLore(ImmutableList.copyOf(lore));
+            itemStack.setItemMeta(itemMeta);
+        }
         return this;
     }
 
     public ItemBuilder removeLoreLine(String line) {
         ItemMeta itemMeta = itemStack.getItemMeta();
-        List<String> lore = itemMeta.getLore();
+        List<String> lore = itemMeta != null ? itemMeta.getLore() : null;
         if (lore != null) {
+            lore = new ArrayList<>(lore);
             lore.remove(line);
-            itemMeta.setLore(lore);
+            itemMeta.setLore(ImmutableList.copyOf(lore));
             itemStack.setItemMeta(itemMeta);
         }
         return this;
@@ -203,10 +235,11 @@ public class ItemBuilder {
 
     public ItemBuilder removeLoreLine(int index) {
         ItemMeta itemMeta = itemStack.getItemMeta();
-        List<String> lore = itemMeta.getLore();
+        List<String> lore = itemMeta != null ? itemMeta.getLore() : null;
         if (lore != null && index >= 0 && index < lore.size()) {
+            lore = new ArrayList<>(lore);
             lore.remove(index);
-            itemMeta.setLore(lore);
+            itemMeta.setLore(ImmutableList.copyOf(lore));
             itemStack.setItemMeta(itemMeta);
         }
         return this;
@@ -214,35 +247,48 @@ public class ItemBuilder {
 
     public ItemBuilder addLoreIf(boolean condition, String string) {
         if (!condition) return this;
+
         ItemMeta itemMeta = itemStack.getItemMeta();
+
+        // Create a new ItemMeta if it is null
+        if (itemMeta == null) {
+            itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
+        }
+
         List<String> lore = itemMeta.getLore();
         if (lore == null) {
             lore = Lists.newArrayList();
         }
         lore.add(string);
-        itemMeta.setLore(lore);
+        itemMeta.setLore(ImmutableList.copyOf(lore));
         itemStack.setItemMeta(itemMeta);
         return this;
     }
 
     public ItemBuilder addLoreLine(String string) {
         ItemMeta itemMeta = itemStack.getItemMeta();
+
+        if (itemMeta == null) {
+            itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
+        }
+
         List<String> lore = itemMeta.getLore();
         if (lore == null) {
             lore = Lists.newArrayList();
         }
         lore.add(string);
-        itemMeta.setLore(lore);
+        itemMeta.setLore(ImmutableList.copyOf(lore));
         itemStack.setItemMeta(itemMeta);
         return this;
     }
 
     public ItemBuilder addLoreLine(int pos, String string) {
         ItemMeta itemMeta = itemStack.getItemMeta();
-        List<String> lore = itemMeta.getLore();
+        List<String> lore = itemMeta != null ? itemMeta.getLore() : null;
         if (lore != null && pos >= 0 && pos < lore.size()) {
+            lore = new ArrayList<>(lore);
             lore.set(pos, string);
-            itemMeta.setLore(lore);
+            itemMeta.setLore(ImmutableList.copyOf(lore));
             itemStack.setItemMeta(itemMeta);
         }
         return this;
@@ -261,22 +307,28 @@ public class ItemBuilder {
 
     public ItemBuilder setLeatherArmorColor(Color color) {
         ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta instanceof LeatherArmorMeta leatherArmorMeta) {
-            leatherArmorMeta.setColor(color);
-            itemStack.setItemMeta(leatherArmorMeta);
+        if (!(itemMeta instanceof LeatherArmorMeta leatherArmorMeta)) {
+            return this;
         }
+
+        leatherArmorMeta.setColor(color);
+        itemStack.setItemMeta(leatherArmorMeta);
         return this;
     }
 
     public ItemBuilder setSkull(String url) {
-        SkullMeta skullMeta = (SkullMeta) Bukkit.getServer().getItemFactory().getItemMeta(Material.PLAYER_HEAD);
-
         if (cachedSkulls.containsKey(url)) {
             itemStack.setItemMeta(cachedSkulls.get(url));
             return this;
         }
 
-        GameProfile profile = new GameProfile(UUID.randomUUID(), "");
+        SkullMeta skullMeta = (SkullMeta) itemStack.getItemMeta();
+
+        if (skullMeta == null) {
+            return this;
+        }
+
+        GameProfile profile = cachedProfiles.computeIfAbsent(url, key -> createGameProfile());
         profile.getProperties().put("textures", new Property("textures", url));
 
         try {
@@ -285,11 +337,16 @@ public class ItemBuilder {
             setProfileMethod.invoke(skullMeta, profile);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             e.printStackTrace();
+            return this;
         }
 
         itemStack.setItemMeta(skullMeta);
         cachedSkulls.put(url, skullMeta);
         return this;
+    }
+
+    private GameProfile createGameProfile() {
+        return new GameProfile(UUID.randomUUID(), "");
     }
 
     public ItemStack build() {
@@ -298,10 +355,11 @@ public class ItemBuilder {
 
     public ItemBuilder removeLastLoreLine() {
         ItemMeta itemMeta = itemStack.getItemMeta();
-        List<String> lore = itemMeta.getLore();
+        List<String> lore = itemMeta != null ? itemMeta.getLore() : null;
         if (lore != null && !lore.isEmpty()) {
+            lore = new ArrayList<>(lore);
             lore.remove(lore.size() - 1);
-            itemMeta.setLore(lore);
+            itemMeta.setLore(ImmutableList.copyOf(lore));
             itemStack.setItemMeta(itemMeta);
         }
         return this;

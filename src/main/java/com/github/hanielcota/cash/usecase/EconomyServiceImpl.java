@@ -64,7 +64,7 @@ public class EconomyServiceImpl implements EconomyService {
         PlayerAccount playerAccount = economyRepository.findPlayerAccount(player);
 
         if (playerAccount == null) {
-            playerAccount = new PlayerAccount(player.getUniqueId().toString(), 0);
+            playerAccount = new PlayerAccount(player.getName(), 0);
             economyRepository.savePlayerAccount(playerAccount);
         }
 

@@ -72,8 +72,14 @@ public class CashView {
                 "");
         player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 10f, 10f);
         playerCashMenu.setItem(24, menuItemFactory.createGrayGiftItem());
+
         giftCooldownCache.updateLastCollectedTime(player.getName());
         economyService.deposit(player, 30);
+
+        //update menu
+        new CashView(economyService, menuItemFactory, economyRepository)
+                .createCashView(player)
+                .open(player);
     }
 
     private void redirectURL(Player player) {
@@ -88,5 +94,4 @@ public class CashView {
         player.sendMessage("");
         player.playSound(player.getLocation(), Sound.BLOCK_LEVER_CLICK, 10f, 10f);
     }
-
 }

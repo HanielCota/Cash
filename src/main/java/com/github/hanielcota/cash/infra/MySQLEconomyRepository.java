@@ -19,7 +19,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Getter
@@ -30,33 +29,35 @@ public class MySQLEconomyRepository implements EconomyRepository {
 
     private final HikariDataSource dataSource;
     private final Cache<String, PlayerAccount> cache;
+    private final Cache<String, List<PlayerAccount>> topPlayersCache;
 
     public MySQLEconomyRepository(String jdbcUrl, String username, String password) {
         this.dataSource = createDataSource(jdbcUrl, username, password);
-        this.cache = Caffeine.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES).build();
+        this.cache =
+                Caffeine.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES).build();
+        this.topPlayersCache =
+                Caffeine.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES).build();
         initializeDatabase();
     }
 
     @Override
     public PlayerAccount findPlayerAccount(Player player) {
-        String playerId = player.getUniqueId().toString();
-
+        String playerId = player.getName();
         PlayerAccount cachedAccount = cache.getIfPresent(playerId);
+
         if (cachedAccount != null) {
             return cachedAccount;
         }
 
-        try (Connection connection = dataSource.getConnection()) {
-            String query = "SELECT * FROM cash WHERE player_id = ?";
-            try (PreparedStatement statement = connection.prepareStatement(query)) {
-                statement.setString(1, playerId);
+        try (Connection connection = dataSource.getConnection();
+                PreparedStatement statement = connection.prepareStatement("SELECT player_id, balance FROM cash WHERE player_id = ?")) {
+            statement.setString(1, playerId);
 
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    if (resultSet.next()) {
-                        PlayerAccount playerAccount = new PlayerAccount(playerId, resultSet.getDouble("balance"));
-                        cache.put(playerId, playerAccount);
-                        return playerAccount;
-                    }
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet != null && resultSet.next()) {
+                    PlayerAccount playerAccount = new PlayerAccount(playerId, resultSet.getDouble("balance"));
+                    cache.put(playerId, playerAccount);
+                    return playerAccount;
                 }
             }
         } catch (SQLException e) {
@@ -68,65 +69,62 @@ public class MySQLEconomyRepository implements EconomyRepository {
 
     @Override
     public void savePlayerAccount(PlayerAccount playerAccount) {
-        try (Connection connection = dataSource.getConnection()) {
-            String query = "REPLACE INTO cash (player_id, balance) VALUES (?, ?)";
-            try (PreparedStatement statement = connection.prepareStatement(query)) {
-                statement.setString(1, playerAccount.getPlayerId());
-                statement.setDouble(2, playerAccount.getBalance());
-                statement.executeUpdate();
-            }
+        try (Connection connection = dataSource.getConnection();
+                PreparedStatement statement =
+                        connection.prepareStatement("REPLACE INTO cash (player_id, balance) VALUES (?, ?)")) {
+            statement.setString(1, playerAccount.getPlayerId());
+            statement.setDouble(2, playerAccount.getBalance());
+            statement.executeUpdate();
 
+            // Update the cache
             cache.put(playerAccount.getPlayerId(), playerAccount);
         } catch (SQLException e) {
-            LOGGER.error("Erro ao salvar a conta do jogador para: {}", playerAccount.getPlayerId(), e);
+            LOGGER.error("Error saving player account for player: {}", playerAccount.getPlayerId(), e);
         }
     }
 
     @Override
     public List<PlayerAccount> getTopPlayers(int limit) {
         if (limit < 0) {
-            throw new IllegalArgumentException("O limite deve ser um valor não negativo");
+            throw new IllegalArgumentException("Limit must be a non-negative value.");
         }
 
-        List<PlayerAccount> topPlayers = new ArrayList<>(
-                Optional.ofNullable(cache).map(c -> c.asMap().values()).orElse(Collections.emptyList()));
+        String cacheKey = String.format("topPlayers_%d", limit);
+        List<PlayerAccount> topPlayers = topPlayersCache.getIfPresent(cacheKey);
 
-        if (!topPlayers.isEmpty()) {
-            return adjustListSize(topPlayers, limit);
-        }
-
-        try (Connection connection = dataSource.getConnection()) {
-            String query = "SELECT * FROM cash ORDER BY balance DESC LIMIT ?";
-            try (PreparedStatement statement = connection.prepareStatement(query)) {
-                statement.setInt(1, limit);
-
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    while (resultSet.next()) {
-                        String uniqueId = resultSet.getString("player_id");
-                        double balance = resultSet.getDouble("balance");
-                        PlayerAccount playerAccount = new PlayerAccount(uniqueId, balance);
-                        topPlayers.add(playerAccount);
-                    }
-                }
-            }
-
-            Optional.ofNullable(cache)
-                    .ifPresent(c ->
-                            topPlayers.forEach(playerAccount -> c.put(playerAccount.getPlayerId(), playerAccount)));
-        } catch (SQLException e) {
-            LOGGER.error("Error getting top players from the database", e);
-            return Collections.emptyList();
+        if (topPlayers == null) {
+            topPlayers = retrieveTopPlayersFromDatabase(limit);
+            topPlayersCache.put(cacheKey, topPlayers);
         }
 
         return adjustListSize(topPlayers, limit);
     }
 
-    private List<PlayerAccount> adjustListSize(List<PlayerAccount> list, int limit) {
-        if (list.size() > limit) {
-            return list.subList(0, limit);
+    private List<PlayerAccount> retrieveTopPlayersFromDatabase(int limit) {
+        List<PlayerAccount> topPlayers = new ArrayList<>();
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement("SELECT player_id, balance FROM cash ORDER BY balance DESC LIMIT ?")) {
+            statement.setInt(1, limit);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    String uniqueId = resultSet.getString("player_id");
+                    double balance = resultSet.getDouble("balance");
+                    PlayerAccount playerAccount = new PlayerAccount(uniqueId, balance);
+                    topPlayers.add(playerAccount);
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Error getting top players from the database", e);
+            return Collections.emptyList();
         }
 
-        return list;
+        return topPlayers;
+    }
+
+    private List<PlayerAccount> adjustListSize(List<PlayerAccount> list, int limit) {
+        return Collections.unmodifiableList(list.subList(0, Math.min(list.size(), limit)));
     }
 
     private HikariDataSource createDataSource(String jdbcUrl, String username, String password) {
@@ -144,15 +142,17 @@ public class MySQLEconomyRepository implements EconomyRepository {
 
     private void initializeDatabase() {
         try (Connection connection = dataSource.getConnection()) {
-            String query = "CREATE TABLE IF NOT EXISTS cash ("
-                    + "player_id VARCHAR(36) PRIMARY KEY,"
-                    + "balance DOUBLE NOT NULL"
-                    + ")";
-            try (PreparedStatement statement = connection.prepareStatement(query)) {
-                statement.executeUpdate();
+            if (connection != null) {
+                try (PreparedStatement statement = connection.prepareStatement(
+                        "CREATE TABLE IF NOT EXISTS cash " +
+                                "(player_id VARCHAR(36) " +
+                                "PRIMARY KEY," +
+                                "balance DOUBLE NOT NULL)")) {
+                    statement.executeUpdate();
+                }
             }
         } catch (SQLException e) {
-            LOGGER.error("Erro ao inicializar o banco de dados", e);
+            LOGGER.error("Error initializing the database", e);
         }
     }
 }
