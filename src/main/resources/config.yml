@@ -1,4 +1,4 @@
 database:
-  jdbcUrl: "jdbc:mysql://painel.maxhostings.com.br:3306/s28_cash"
-  username: "u28_189Gj9WHva"
-  password: "7qwmOP^qmoAyQx+immG0jf+A"
+  jdbcUrl: "jdbc:mysql://painel.maxhostings.com.br:3306/database"
+  username: "login"
+  password: "senha
