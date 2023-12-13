@@ -1,7 +1,5 @@
 # Cash
 
-<img src="imagem.jpg" alt="Exemplo imagem">
-
 > O plugin "Cash" é uma solução otimizada e cacheada para gerenciar economia em servidores Bukkit, incorporando uma arquitetura limpa para proporcionar desempenho eficiente e funcionalidades robustas.
 
 ### Ajustes e melhorias
