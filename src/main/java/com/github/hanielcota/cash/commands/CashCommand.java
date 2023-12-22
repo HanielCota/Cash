@@ -152,7 +152,6 @@ public class CashCommand extends BaseCommand {
         sender.sendMessage("§aAdicionada a quantia de " + amount + " cash para " + targetPlayer.getName());
     }
 
-
     @Subcommand("enviar")
     @CommandCompletion("@players")
     private void onSendCashCommand(Player sender, String[] args) {
@@ -180,6 +179,11 @@ public class CashCommand extends BaseCommand {
 
         if (amount < 0) {
             sender.sendMessage("§cO valor não pode ser negativo.");
+            return;
+        }
+
+        if (sender.equals(targetPlayer)) {
+            sender.sendMessage("§cVocê não pode enviar cash para você mesmo.");
             return;
         }
 
