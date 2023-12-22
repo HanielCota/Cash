@@ -38,6 +38,7 @@ public class InMemoryEconomyRepository implements EconomyRepository {
         return cache.asMap().values().stream().limit(limit).toList();
     }
 
+
     private PlayerAccount getDefaultPlayerAccount(String playerId) {
         return new PlayerAccount(playerId, 0.0);
     }

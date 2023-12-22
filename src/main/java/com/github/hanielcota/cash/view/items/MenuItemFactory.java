@@ -10,7 +10,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 public class MenuItemFactory {
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+
 
     public ItemStack createGiftItem() {
         return new ItemBuilder(SkullUrl.getSKULL_URL())
@@ -58,7 +64,7 @@ public class MenuItemFactory {
     }
 
     public ItemStack createBackItem() {
-        return new ItemBuilder(Material.ARROW)
+        return new ItemBuilder(Material.SPECTRAL_ARROW)
                 .setName("§cVoltar")
                 .setLore("§7Clique para retornar ao menu anterior.")
                 .build();
@@ -77,6 +83,25 @@ public class MenuItemFactory {
                         "§7Colocação: #" + position,
                         "§7Saldo: §e" + NumberFormatter.formatAbbreviatedThreadSafe(balance))
                 .setSkullOwner(playerName)
+                .build();
+    }
+
+    public ItemStack createTransactionItem(double amount, LocalDateTime transactionTime) {
+        String formattedAmount = NumberFormatter.formatAbbreviatedThreadSafe(amount);
+        String formattedTransactionTime = transactionTime.format(DATE_TIME_FORMATTER);
+
+        return new ItemBuilder(Material.PAPER)
+                .setName("§aTransação de Cash")
+                .setLore(
+                        "§7Valor: §a" + formattedAmount,
+                        "§7Data: " + formattedTransactionTime)
+                .build();
+    }
+    public ItemStack createRedirectTransactionHistoric() {
+        return new ItemBuilder(Material.WRITABLE_BOOK)
+                .setName("§aHistórico de Transação")
+                .setLore(
+                        "§7Confira seu histórico de transação de cash.")
                 .build();
     }
 

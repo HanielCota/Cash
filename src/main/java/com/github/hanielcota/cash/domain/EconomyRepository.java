@@ -9,4 +9,5 @@ public interface EconomyRepository {
     void savePlayerAccount(PlayerAccount playerAccount);
 
     List<PlayerAccount> getTopPlayers(int limit);
+
 }

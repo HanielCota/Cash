@@ -24,7 +24,6 @@ public class CashTopView {
 
     public CashTopPlayersMenu createTopCashMenu(Player player) {
         CashTopPlayersMenu menu = new CashTopPlayersMenu();
-
         updateTopPlayers(menu, player);
         return menu;
     }
@@ -35,22 +34,30 @@ public class CashTopView {
 
         ItemStack barrierItem = menuItemFactory.createBarrierItem();
 
+        fillBarrierItems(topPlayersMenu, startSlot, barrierItem);
+        fillTopPlayerItems(topPlayersMenu, startSlot, topPlayers);
+        topPlayersMenu.setItem(27, menuItemFactory.createBackItem(), click -> redirectToCashView(player));
+    }
+
+    private void fillBarrierItems(CashTopPlayersMenu topPlayersMenu, int startSlot, ItemStack barrierItem) {
         for (int i = 0; i < 5; i++) {
             topPlayersMenu.setItem(startSlot + i, barrierItem);
         }
+    }
 
+    private void fillTopPlayerItems(CashTopPlayersMenu topPlayersMenu, int startSlot, List<PlayerAccount> topPlayers) {
         for (int i = 0; i < Math.min(topPlayers.size(), 5); i++) {
             PlayerAccount playerAccount = topPlayers.get(i);
             ItemStack topPlayerItem = menuItemFactory.createTopPlayerItem(playerAccount, playerAccount.getPlayerId(), i + 1);
             topPlayersMenu.setItem(startSlot + i, topPlayerItem);
         }
-        topPlayersMenu.setItem(27, menuItemFactory.createBackItem(), click -> {
-            new CashView(economyService, menuItemFactory, economyRepository)
-                    .createCashView(player)
-                    .open(player);
-        });
     }
 
+    private void redirectToCashView(Player player) {
+        new CashView(economyService, menuItemFactory, economyRepository)
+                .createCashView(player)
+                .open(player);
+    }
 
     private static class Cache<V> {
         private final long expirationMillis;

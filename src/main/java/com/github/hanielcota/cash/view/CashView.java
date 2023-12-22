@@ -11,9 +11,11 @@ import lombok.extern.slf4j.Slf4j;
 import net.md_5.bungee.api.chat.ClickEvent;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 @Slf4j
 @AllArgsConstructor
@@ -34,19 +36,37 @@ public class CashView {
         playerCashMenu.setItem(22, menuItemFactory.createInformationItem());
         playerCashMenu.setItem(4, menuItemFactory.createSkullItem(player, economyService));
 
-        playerCashMenu.setItem(21, menuItemFactory.createRedirectURLItem(), click -> redirectURL(player));
-
-        playerCashMenu.setItem(19, menuItemFactory.createTopItem(), click -> {
-            new CashTopView(economyService, menuItemFactory, economyRepository)
-                    .createTopCashMenu(player)
-                    .open(player);
-        });
+        addHistoricItem(playerCashMenu, player);
+        addRedirectURLItem(playerCashMenu, player);
+        addTopItem(playerCashMenu, player);
 
         if (!canCollectGift(player)) {
             playerCashMenu.setItem(24, menuItemFactory.createGrayGiftItem());
             return;
         }
 
+        addGiftItem(playerCashMenu, player);
+    }
+
+    private void addHistoricItem(CashMenu playerCashMenu, Player player) {
+        Consumer<InventoryClickEvent> inventoryClickEventConsumer =
+                click -> new CashHistoricView(economyService, menuItemFactory, economyRepository)
+                        .createHistoricMenu(player)
+                        .open(player);
+        playerCashMenu.setItem(25, menuItemFactory.createRedirectTransactionHistoric(), inventoryClickEventConsumer);
+    }
+
+    private void addRedirectURLItem(CashMenu playerCashMenu, Player player) {
+        playerCashMenu.setItem(21, menuItemFactory.createRedirectURLItem(), click -> redirectURL(player));
+    }
+
+    private void addTopItem(CashMenu playerCashMenu, Player player) {
+        playerCashMenu.setItem(19, menuItemFactory.createTopItem(), click -> new CashTopView(economyService, menuItemFactory, economyRepository)
+                .createTopCashMenu(player)
+                .open(player));
+    }
+
+    private void addGiftItem(CashMenu playerCashMenu, Player player) {
         playerCashMenu.setItem(24, menuItemFactory.createGiftItem(), click -> collectGift(player, playerCashMenu));
     }
 
@@ -76,10 +96,8 @@ public class CashView {
         giftCooldownCache.updateLastCollectedTime(player.getName());
         economyService.deposit(player, 30);
 
-        //update menu
-        new CashView(economyService, menuItemFactory, economyRepository)
-                .createCashView(player)
-                .open(player);
+        // update menu
+        createCashView(player).open(player);
     }
 
     private void redirectURL(Player player) {
